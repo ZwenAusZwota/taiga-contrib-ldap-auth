@@ -2,6 +2,7 @@
 # Copyright (C) 2014 Jesús Espino <jespinog@gmail.com>
 # Copyright (C) 2014 David Barragán <bameda@dbarragan.com>
 # Copyright (C) 2015 Ensky Lin <enskylin@gmail.com>
+# Copyright (C) 2018 Sven Schuberth <sven.schuberth@gmx.de>
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
