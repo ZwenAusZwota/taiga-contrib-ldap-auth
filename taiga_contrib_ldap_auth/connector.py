@@ -34,6 +34,7 @@ SEARCH_SUFFIX = getattr(settings, "LDAP_SEARCH_SUFFIX", "")
 SEARCH_FILTER = getattr(settings, "LDAP_SEARCH_FILTER", "")
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
+MAIL_SUFFIX = gettattr(settings, "MAIL_SUFFIX", SEARCH_SUFFIX)
 
 EMAIL_PROPERTY = getattr(settings, "LDAP_EMAIL_PROPERTY", "")
 FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
@@ -48,10 +49,12 @@ def login(username: str, password: str) -> tuple:
 
         c = None
 
+        #anonymous login not workin!
         if BIND_DN is not None and BIND_DN != '':
             c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=SIMPLE, check_names=True)
         else:
-            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=None, password=None, authentication=ANONYMOUS, check_names=True)
+            usr = username + SEARCH_SUFFIX
+            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=usr, password=password, authentication=ANONYMOUS, check_names=True)
 
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
@@ -67,15 +70,20 @@ def login(username: str, password: str) -> tuple:
         c.search(search_base = SEARCH_BASE,
                  search_filter = search_filter,
                  search_scope = SUBTREE,
-                 attributes = [EMAIL_PROPERTY,FULL_NAME_PROPERTY],
+                 #attributes = [EMAIL_PROPERTY,FULL_NAME_PROPERTY], #no attributes on ldap-server
                  paged_size = 5)
 
         if len(c.response) > 0:
             dn = c.response[0].get('dn')
-            user_email = c.response[0].get('raw_attributes').get(EMAIL_PROPERTY)[0].decode('utf-8')
-            full_name = c.response[0].get('raw_attributes').get(FULL_NAME_PROPERTY)[0].decode('utf-8')
+            str_a = dn.split(',')
+            name = str_a[0].replace('CN=','').replace('\\','').strip()
+            vname = str_a[1].strip()
+            full_name = vname + ' ' +name
+            user_email = vname + '.' + name + MAIL_SUFFIX
+            #user_email = c.response[0].get('raw_attributes').get(EMAIL_PROPERTY)[0].decode('utf-8')
+            #full_name = c.response[0].get('raw_attributes').get(FULL_NAME_PROPERTY)[0].decode('utf-8')
 
-            user_conn = Connection(server, auto_bind = True, client_strategy = SYNC, user = dn, password = password, authentication = SIMPLE, check_names = True)
+            #user_conn = Connection(server, auto_bind = True, client_strategy = SYNC, user = dn, password = password, authentication = SIMPLE, check_names = True)
 
             return (user_email, full_name)
 
