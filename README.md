@@ -33,10 +33,8 @@ LDAP configuration:
   # LDAP property used for searching, ie. login username needs to match value in sAMAccountName property in LDAP
   LDAP_SEARCH_PROPERTY = 'sAMAccountName'
   LDAP_SEARCH_SUFFIX = None # '@example.com'
+  MAIL_SUFFIX = '@company.com'
 
-  # Names of LDAP properties on user account to get email and full name
-  LDAP_EMAIL_PROPERTY = 'mail'
-  LDAP_FULL_NAME_PROPERTY = 'name'
 ```
 
 The logic of the code is such that a dedicated domain service account user performs a search on LDAP for an account that has a LDAP_SEARCH_PROPERTY value that matches the username the user typed in on the Taiga login form.  
