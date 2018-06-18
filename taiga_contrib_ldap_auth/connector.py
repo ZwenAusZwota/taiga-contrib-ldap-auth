@@ -46,13 +46,13 @@ def write_log(text):
      tf.close()
 
 def login(username: str, password: str) -> tuple:
-    raise LDAPLogiError({"error_message":"test1"})
+    write_log("ldap started")
     try:
         if SERVER.lower().startswith("ldaps://"):
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True) 
         else:
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = False)  # define an unsecure LDAP server, requesting info on DSE and schema
-
+        print(server)
         c = None
 
         #anonymous login not workin!
