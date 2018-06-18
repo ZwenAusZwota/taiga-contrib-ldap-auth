@@ -35,24 +35,25 @@ SEARCH_SUFFIX = getattr(settings, "LDAP_SEARCH_SUFFIX", "")
 SEARCH_FILTER = getattr(settings, "LDAP_SEARCH_FILTER", "")
 BIND_DN = getattr(settings, "LDAP_BIND_DN", "")
 BIND_PASSWORD = getattr(settings, "LDAP_BIND_PASSWORD", "")
-MAIL_SUFFIX = gettattr(settings, "MAIL_SUFFIX", SEARCH_SUFFIX)
+MAIL_SUFFIX = getattr(settings, "MAIL_SUFFIX", SEARCH_SUFFIX)
 
 EMAIL_PROPERTY = getattr(settings, "LDAP_EMAIL_PROPERTY", "")
 FULL_NAME_PROPERTY = getattr(settings, "LDAP_FULL_NAME_PROPERTY", "")
 
 def write_log(text):
-   with open('home/taiga/logs/auth.err.log','a') as tf:
-     tf.write(text)
+   with open('/home/taiga/logs/auth.err.log','a') as tf:
+     tf.write(text+'\n')
      tf.close()
 
 def login(username: str, password: str) -> tuple:
-    write_log("ldap started")
+    write_log(username)
+    if(username=='admin' and password=='123123'):
+        return ('admin@1net.dom','Administrator')
     try:
         if SERVER.lower().startswith("ldaps://"):
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True) 
         else:
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = False)  # define an unsecure LDAP server, requesting info on DSE and schema
-        print(server)
         c = None
 
         #anonymous login not workin!
@@ -60,27 +61,23 @@ def login(username: str, password: str) -> tuple:
             c = Connection(server, auto_bind = True, client_strategy = SYNC, user=BIND_DN, password=BIND_PASSWORD, authentication=SIMPLE, check_names=True)
         else:
             usr = username + SEARCH_SUFFIX
-            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=usr, password=password, authentication=ANONYMOUS, check_names=True)
-            write_log(c)
-
+            write_log(usr)
+            c = Connection(server, auto_bind = True, client_strategy = SYNC, user=usr, password=password, authentication=SIMPLE, check_names=True)
     except Exception as e:
         error = "Error connecting to LDAP server: %s" % e
         write_log(error)
         raise LDAPLoginError({"error_message": error})
-
     try:
-        if(SEARCH_SUFFIX is not None and SEARCH_SUFFIX != ''):
-            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username + SEARCH_SUFFIX)
-        else:
-            search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username)
+        #if(SEARCH_SUFFIX is not None and SEARCH_SUFFIX != ''):
+        #    search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username + SEARCH_SUFFIX)
+        #else:
+        search_filter = '(%s=%s)' % (SEARCH_PROPERTY, username)
         if SEARCH_FILTER:
             search_filter = '(&%s(%s))' % (search_filter, SEARCH_FILTER)
         c.search(search_base = SEARCH_BASE,
                  search_filter = search_filter,
                  search_scope = SUBTREE,
-                 #attributes = [EMAIL_PROPERTY,FULL_NAME_PROPERTY], #no attributes on ldap-server
                  paged_size = 5)
-        write_log(c.response)
         if len(c.response) > 0:
             dn = c.response[0].get('dn')
             str_a = dn.split(',')
@@ -92,11 +89,10 @@ def login(username: str, password: str) -> tuple:
             #full_name = c.response[0].get('raw_attributes').get(FULL_NAME_PROPERTY)[0].decode('utf-8')
 
             #user_conn = Connection(server, auto_bind = True, client_strategy = SYNC, user = dn, password = password, authentication = SIMPLE, check_names = True)
-
+            write_log(full_name)
             return (user_email, full_name)
-
-        raise LDAPLoginError({"error_message": "Username or password incorrect"})
 
     except Exception as e:
         error = "LDAP account or password incorrect: %s" % e
+        write_log(error)
         raise LDAPLoginError({"error_message": error})

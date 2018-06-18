@@ -51,7 +51,6 @@ def ldap_register(username: str, email: str, full_name: str):
 
 
 def ldap_login_func(request):
-    print("ldap func")
     username = request.DATA.get('username', None)
     password = request.DATA.get('password', None)
 

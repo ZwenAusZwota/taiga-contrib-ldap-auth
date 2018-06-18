@@ -20,9 +20,10 @@ from django.db.models import signals
 
 class TaigaContribLDAPAuthAppConfig(AppConfig):
     name = "taiga_contrib_ldap_auth"
-    verbose_name = "Taiga contrib ldap auth App Config"
+    verbose_name = "Taiga contrib ldap auth App Config makeIT"
 
     def ready(self):
         from taiga.auth.services import register_auth_plugin
         from . import services
-        register_auth_plugin("ldap", services.ldap_login_func)
+        register_auth_plugin("ldap_mit", services.ldap_login_func)
+
