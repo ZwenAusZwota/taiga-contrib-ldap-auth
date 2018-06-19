@@ -57,6 +57,6 @@ Change in your dist/js/conf.json the loginFormType setting to "ldap":
 
 ```json
 ...
-    "loginFormType": "ldap",
+    "loginFormType": "ldap_mit",
 ...
 ```
