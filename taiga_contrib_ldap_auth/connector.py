@@ -48,7 +48,7 @@ def write_log(text):
 def login(username: str, password: str) -> tuple:
     write_log(username)
     if(username=='admin' and password=='123123'):
-        return ('admin@1net.dom','Administrator')
+        return ('admin@yournet.dom','Administrator')
     try:
         if SERVER.lower().startswith("ldaps://"):
             server = Server(SERVER, port = PORT, get_info = NONE, use_ssl = True) 
